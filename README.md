@@ -22,6 +22,8 @@ So the Java version is ~2.9 times faster then the Go one. This resembles the sca
 So Java is only ~1.05 times as fast as the Go version.  
 This is in the expected range. Further optimization is possible (by tuning the hash map implementation).
 
+On my desktop system (GNU/Linux, Intel(R) Core(TM) i7 CPU 860 @ 2.80GHz) I get values around `real 5.00` for both the Java (even started with `-XX:+TieredCompilation -XX:+AggressiveOpts -server`) and my Go version. 
+
 ## Build
 
 You need a working Go 1.7 environment. No other external library needed.
