@@ -29,5 +29,5 @@ You need a working Go 1.7 environment.
 
 
 # License
-This is Free software covered by the terms of the Apache 2.0 [LICENSE](LICENSE)
+This is Free software covered by the terms of the Apache 2.0 [LICENSE](LICENSE)  
 (c) 2016 by Sascha L. Teichmann
