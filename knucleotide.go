@@ -62,8 +62,7 @@ func maxFill(n int) int {
 }
 
 func (h *hash) get(k uint64) int {
-	e := h.slots[k&h.mask]
-	for ; e != nil; e = e.next {
+	for e := h.slots[k&h.mask]; e != nil; e = e.next {
 		if e.k == k {
 			return e.v
 		}
