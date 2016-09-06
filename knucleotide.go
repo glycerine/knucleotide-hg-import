@@ -1,5 +1,5 @@
 // (c) 2016 by Sascha L. Teichmann
-// This is Free Software covered by the terms of the Apache 2.0 license.
+// This is Free Software covered by the terms of the MIT license.
 // See LICENSE for details.
 
 package main
