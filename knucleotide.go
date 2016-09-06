@@ -216,8 +216,9 @@ func createFragmentMap(seq []byte, ofs, length int) *hash {
 }
 
 func (r *result) add(o *result) {
-	o.m.visit(func(k uint64, v int) {
-		r.m.add(k, v)
+	rm := r.getM()
+	o.getM().visit(func(k uint64, v int) {
+		rm.add(k, v)
 	})
 }
 
