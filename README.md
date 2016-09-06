@@ -6,7 +6,7 @@ Read this on [Benchmarkgames](http://benchmarksgame.alioth.debian.org/u64q/compa
 
 and can't believe it. So I wrote my own Go version.
 
-The original timings on my laptop (GNU/Linux, Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz):
+The timings of the current upstream versions on my laptop (GNU/Linux, Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz):
 
 * Java: `/usr/bin/time -p java -server knucleotide < knucleotide-input25000000.txt` -> real 5.80
 * Go: `/usr/bin/time -p ./knucleotide.go-3 < knucleotide-input25000000.txt` -> real 16.86
