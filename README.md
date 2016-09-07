@@ -62,7 +62,7 @@ The values for Java are more stable on this machine.
 
 ## Build
 
-You need a working Go 1.7 environment. No other external library needed.
+You need a working Go 1.7 environment.
 
     $ go get bitbucket.org/s_l_teichmann/knucleotide
 
