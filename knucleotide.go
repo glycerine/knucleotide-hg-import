@@ -16,6 +16,8 @@ import (
 	"runtime"
 	"sort"
 	"sync"
+
+	"bitbucket.org/s_l_teichmann/fastmap"
 )
 
 var (
@@ -34,149 +36,9 @@ var (
 	}
 )
 
-type entry struct {
-	k    uint64
-	v    int
-	next *entry
-}
-
-type hash struct {
-	mask  uint64
-	slots []*entry
-	used  int
-	size  int
-	max   int
-	free  []entry
-}
-
-const initialBits = 9
-
-func newHash() *hash {
-	return &hash{
-		mask:  ^(^0 << initialBits),
-		max:   maxFill(512),
-		slots: make([]*entry, 1<<initialBits),
-	}
-}
-
-func maxFill(n int) int {
-	return int(0.75 * float32(n))
-}
-
-func (h *hash) get(k uint64) int {
-	for e := h.slots[k&h.mask]; e != nil; e = e.next {
-		if e.k == k {
-			return e.v
-		}
-	}
-	return 0
-}
-
-func (h *hash) visit(fn func(uint64, int)) {
-	for _, e := range h.slots {
-		for ; e != nil; e = e.next {
-			fn(e.k, e.v)
-		}
-	}
-}
-
-func (h *hash) add(k uint64, v int) {
-	p := &h.slots[k&h.mask]
-	e := *p
-	if e != nil {
-		for ; e != nil; e = e.next {
-			if e.k == k {
-				e.v += v
-				return
-			}
-		}
-		n := h.alloc()
-		n.k = k
-		n.v = v
-		n.next = *p
-		*p = n
-		h.size++
-		return
-	}
-	n := h.alloc()
-	n.k = k
-	n.v = v
-	*p = n
-	h.size++
-	h.used++
-	if h.used > h.max {
-		h.rehash()
-	}
-}
-
-func (h *hash) inc(k uint64) {
-	p := &h.slots[k&h.mask]
-	e := *p
-	if e != nil {
-		for ; e != nil; e = e.next {
-			if e.k == k {
-				e.v++
-				return
-			}
-		}
-		n := h.alloc()
-		n.k = k
-		n.v = 1
-		n.next = *p
-		*p = n
-		h.size++
-		return
-	}
-	n := h.alloc()
-	n.k = k
-	n.v = 1
-	*p = n
-	h.size++
-	h.used++
-	if h.used > h.max {
-		h.rehash()
-	}
-}
-
-func (h *hash) rehash() {
-	ns := len(h.slots) << 1
-	nslots := make([]*entry, ns)
-	nmask := (h.mask << 1) | 1
-	h.mask = nmask
-	nu := 0
-	for i, e := range h.slots {
-		if e == nil {
-			continue
-		}
-		for e != nil {
-			n := e.next
-			p := &nslots[e.k&nmask]
-			if *p == nil {
-				nu++
-			}
-			e.next = *p
-			*p = e
-			e = n
-		}
-		h.slots[i] = nil
-	}
-	h.used = nu
-	h.slots = nslots
-	h.max = maxFill(ns)
-}
-
-func (h *hash) alloc() *entry {
-	if len(h.free) == 0 {
-		h.free = make([]entry, 256)
-	}
-	x := &h.free[0]
-	h.free = h.free[1:]
-	return x
-}
-
 type result struct {
 	c      *sync.Cond
-	m      *hash
+	m      *fastmap.Hash64uToInt
 	keyLen int
 	sync.Mutex
 }
@@ -187,7 +49,7 @@ func newResult(keyLen int) *result {
 	return r
 }
 
-func (r *result) getM() (h *hash) {
+func (r *result) getM() (h *fastmap.Hash64uToInt) {
 	r.Lock()
 	for r.m == nil {
 		r.c.Wait()
@@ -197,7 +59,7 @@ func (r *result) getM() (h *hash) {
 	return
 }
 
-func (r *result) setM(m *hash) {
+func (r *result) setM(m *fastmap.Hash64uToInt) {
 	r.Lock()
 	r.m = m
 	r.c.Signal()
@@ -237,25 +99,25 @@ func key(arr []byte) uint64 {
 	return k
 }
 
-func createFragmentMap(seq []byte, ofs, length int) *hash {
-	m := newHash()
+func createFragmentMap(seq []byte, ofs, length int) *fastmap.Hash64uToInt {
+	m := fastmap.NewHash64uToInt()
 	lastIndex := len(seq) - length + 1
 	for i := ofs; i < lastIndex; i += length {
 		// Manually inlined for performance
-		// m.add(key(seq[i:i+length]), 1)
+		// m.Add(key(seq[i:i+length]), 1)
 		var k uint64
 		for _, v := range seq[i : i+length] {
 			k = (k << 2) | uint64(v)
 		}
-		m.inc(k)
+		m.Inc(k)
 	}
 	return m
 }
 
 func (r *result) add(o *result) {
 	rm := r.getM()
-	o.getM().visit(func(k uint64, v int) {
-		rm.add(k, v)
+	o.getM().Visit(func(k uint64, v int) {
+		rm.Add(k, v)
 	})
 }
 
@@ -292,9 +154,9 @@ func keyToString(k uint64, length int) string {
 
 func writeFrequencies(total int, frequencies *result) string {
 	m := frequencies.getM()
-	freq := make(sortByFreq, m.size)
+	freq := make(sortByFreq, m.Size())
 	i := 0
-	m.visit(func(k uint64, v int) {
+	m.Visit(func(k uint64, v int) {
 		freq[i] = keyFreq{keyToString(k, frequencies.keyLen), v}
 		i++
 	})
@@ -344,7 +206,7 @@ func writeCount(results []*result, fragment string) string {
 	count := 0
 	for _, r := range results {
 		if r.keyLen == len(ks) {
-			count += r.getM().get(k)
+			count += r.getM().Get(k)
 		}
 	}
 	return fmt.Sprintf("%d\t%s", count, fragment)
