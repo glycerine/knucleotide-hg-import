@@ -6,23 +6,59 @@ I've read this on [Benchmarkgames](http://benchmarksgame.alioth.debian.org/u64q/
 
 and can't believe it. So I wrote my own Go version.
 
-## Reproducing the timings on my hardware
+## Reproducing the old timings on my hardware
 
-The timings of the current upstream versions on my laptop (GNU/Linux, Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz):
+For reference the timings of the current upstream versions on my laptop (GNU/Linux, Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz):
 
 * Java: `/usr/bin/time -p java -server knucleotide < knucleotide-input25000000.txt` -> `real 5.80`
 * Go: `/usr/bin/time -p ./knucleotide.go-3 < knucleotide-input25000000.txt` -> `real 16.86`
 
 So the Java version is ~2.9 times faster then the Go one. This resembles the scale of the reported measurement.
 
-## Timing of my version
+## Timing of my new version
 
-* `/usr/bin/time -p ./knucleotide < knucleotide-input25000000.txt` -> `real 6.09`
+### On my laptop:
 
-So Java is only ~1.05 times as fast as the Go version.  
-This is in the expected range. Further optimization is possible (by tuning the hash map implementation).
+* `/usr/bin/time -p ./knucleotide < knucleotide-input25000000.txt`
+* `/usr/bin/time -p java -XX:+TieredCompilation -XX:+AggressiveOpts -server knucleotide < knucleotide-input25000000.txt`
 
-On my desktop system (GNU/Linux, Intel(R) Core(TM) i7 CPU 860 @ 2.80GHz) I get values around `real 5.00` for both the Java (even started with `-XX:+TieredCompilation -XX:+AggressiveOpts -server`) and my Go version. 
+Values are best of 5.
+
+* My Go version: `real 5.37`
+* Java: `real 5.78``
+
+So on this machine my Go version is ~1.076 times as fast as the Java one.
+
+On this machine the values of the Java version build a broader range.
+Comparison of the mean values:
+
+* My Go version: `5.406`
+* Java: `6.202`
+
+Go is ~1.147 as fast the Java one.
+
+### On my desktop system (GNU/Linux, Intel(R) Core(TM) i7 CPU 860 @ 2.80GHz):
+
+Calls as above.
+
+Values are best of 5.
+
+* My Go version: `real 3.90`
+* Java: `real 4.79`
+
+So on this machine my Go version is ~1.2 times as fast as the Java one.
+
+The values for Java are more stable on this machine.
+
+## Java and Go versions
+
+    $ java -version
+    openjdk version "1.8.0_102"
+    OpenJDK Runtime Environment (build 1.8.0_102-b14)
+    OpenJDK 64-Bit Server VM (build 25.102-b14, mixed mode)
+
+    $ go version
+    go version go1.7 linux/amd64
 
 ## Build
 

@@ -107,6 +107,35 @@ func (h *hash) add(k uint64, v int) {
 	}
 }
 
+func (h *hash) inc(k uint64) {
+	p := &h.slots[k&h.mask]
+	e := *p
+	if e != nil {
+		for ; e != nil; e = e.next {
+			if e.k == k {
+				e.v++
+				return
+			}
+		}
+		n := h.alloc()
+		n.k = k
+		n.v = 1
+		n.next = *p
+		*p = n
+		h.size++
+		return
+	}
+	n := h.alloc()
+	n.k = k
+	n.v = 1
+	*p = n
+	h.size++
+	h.used++
+	if h.used > h.max {
+		h.rehash()
+	}
+}
+
 func (h *hash) rehash() {
 	ns := len(h.slots) << 1
 	nslots := make([]*entry, ns)
@@ -210,7 +239,13 @@ func createFragmentMap(seq []byte, ofs, length int) *hash {
 	m := newHash()
 	lastIndex := len(seq) - length + 1
 	for i := ofs; i < lastIndex; i += length {
-		m.add(key(seq[i:i+length]), 1)
+		// Manually inlined for performance
+		// m.add(key(seq[i:i+length]), 1)
+		var k uint64
+		for _, v := range seq[i : i+length] {
+			k = (k << 2) | uint64(v)
+		}
+		m.inc(k)
 	}
 	return m
 }
