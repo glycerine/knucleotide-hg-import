@@ -15,7 +15,7 @@ For reference the timings of the current upstream versions on my laptop (GNU/Lin
 
 So the Java version is ~2.9 times faster then the Go one. This resembles the scale of the reported measurement.
 
-## Timing of my new version
+## Timings of my new version
 
 ### On my laptop:
 
@@ -25,11 +25,11 @@ So the Java version is ~2.9 times faster then the Go one. This resembles the sca
 Values are best of 5.
 
 * My Go version: `real 5.37`
-* Java: `real 5.78``
+* Java: `real 5.78`
 
 So on this machine my Go version is ~1.076 times as fast as the Java one.
 
-On this machine the values of the Java version build a broader range.
+On this machine the values of the Java version build a broader range.  
 Comparison of the mean values:
 
 * My Go version: `5.406`
