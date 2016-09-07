@@ -1,6 +1,8 @@
+// The Computer Language Benchmarks Game
+// http://benchmarksgame.alioth.debian.org/
+//
 // (c) 2016 by Sascha L. Teichmann
 // This is Free Software covered by the terms of the MIT license.
-// See LICENSE for details.
 
 package main
 
