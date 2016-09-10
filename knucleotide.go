@@ -9,11 +9,13 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"runtime"
+	"runtime/pprof"
 	"sort"
 	"sync"
 
@@ -137,10 +139,10 @@ func (s sortByFreq) Swap(i, j int) {
 }
 
 func (s sortByFreq) Less(i, j int) bool {
-	if s[i].cnt == s[j].cnt {
-		return s[i].key < s[j].key
+	if d := s[i].cnt - s[j].cnt; d != 0 {
+		return d > 0
 	}
-	return s[i].cnt > s[j].cnt
+	return s[i].key < s[j].key
 }
 
 func keyToString(k uint64, length int) string {
@@ -213,6 +215,19 @@ func writeCount(results []*result, fragment string) string {
 }
 
 func main() {
+	c := flag.String("c", "", "write cpu profile to file")
+
+	flag.Parse()
+
+	if *c != "" {
+		f, err := os.Create(*c)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	sequence, err := read(os.Stdin)
 	if err != nil {
 		log.Fatalln(err)

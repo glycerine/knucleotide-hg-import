@@ -1,6 +1,6 @@
 # k-nucleotide in Go
 
-I've read this on [Benchmarkgames](http://benchmarksgame.alioth.debian.org/u64q/compare.php?lang=java&lang2=go):
+I've read this on [The Computer Language Benchmarks Game](http://benchmarksgame.alioth.debian.org/u64q/compare.php?lang=java&lang2=go):
 
 ![Java vs. Go](https://bytebucket.org/s_l_teichmann/knucleotide/raw/default/images/java-go.png)
 
