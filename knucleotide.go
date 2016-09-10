@@ -9,13 +9,11 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"runtime"
-	"runtime/pprof"
 	"sort"
 	"sync"
 
@@ -215,18 +213,6 @@ func writeCount(results []*result, fragment string) string {
 }
 
 func main() {
-	c := flag.String("c", "", "write cpu profile to file")
-
-	flag.Parse()
-
-	if *c != "" {
-		f, err := os.Create(*c)
-		if err != nil {
-			log.Fatal(err)
-		}
-		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
-	}
 
 	sequence, err := read(os.Stdin)
 	if err != nil {
