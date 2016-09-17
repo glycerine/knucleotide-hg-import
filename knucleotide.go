@@ -68,9 +68,9 @@ func (r *result) setM(m *genmap.MapUint64ToInt) {
 
 func read(r io.Reader) ([]byte, error) {
 	s := bufio.NewScanner(r)
-	if s.Scan() {
-		for !bytes.HasPrefix(s.Bytes(), three) {
-			s.Scan()
+	for s.Scan() {
+		if bytes.HasPrefix(s.Bytes(), three) {
+			break
 		}
 	}
 	var buf bytes.Buffer
