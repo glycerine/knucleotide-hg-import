@@ -17,7 +17,7 @@ import (
 	"sort"
 	"sync"
 
-	"bitbucket.org/s_l_teichmann/fastmap"
+	"github.com/s-l-teichmann/genmap"
 )
 
 var (
@@ -38,7 +38,7 @@ var (
 
 type result struct {
 	c      *sync.Cond
-	m      *fastmap.Hash64uToInt
+	m      *genmap.MapUint64ToInt
 	keyLen int
 	sync.Mutex
 }
@@ -49,7 +49,7 @@ func newResult(keyLen int) *result {
 	return r
 }
 
-func (r *result) getM() (h *fastmap.Hash64uToInt) {
+func (r *result) getM() (h *genmap.MapUint64ToInt) {
 	r.Lock()
 	for r.m == nil {
 		r.c.Wait()
@@ -59,7 +59,7 @@ func (r *result) getM() (h *fastmap.Hash64uToInt) {
 	return
 }
 
-func (r *result) setM(m *fastmap.Hash64uToInt) {
+func (r *result) setM(m *genmap.MapUint64ToInt) {
 	r.Lock()
 	r.m = m
 	r.c.Signal()
@@ -99,8 +99,8 @@ func key(arr []byte) uint64 {
 	return k
 }
 
-func createFragmentMap(seq []byte, ofs, length int) *fastmap.Hash64uToInt {
-	m := fastmap.NewHash64uToInt()
+func createFragmentMap(seq []byte, ofs, length int) *genmap.MapUint64ToInt {
+	m := genmap.NewMapUint64ToInt(512)
 	lastIndex := len(seq) - length + 1
 	for i := ofs; i < lastIndex; i += length {
 		// Manually inlined for performance
